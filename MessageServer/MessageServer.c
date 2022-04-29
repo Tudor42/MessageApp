@@ -18,6 +18,28 @@ int _tmain(int argc, TCHAR* argv[])
     (void)argc;
     (void)argv;
 
+    if (argc < 2) {
+        _tprintf_s(TEXT("Error: maximum number of connections missing!\n"));
+        return -1;
+    }
+
+    if (argc > 2) {
+        _tprintf_s(TEXT("Error: too many arguments!\n"));
+        return -1;
+    }
+
+    int maxNumberOfUsers = 0;
+
+    __try {
+        maxNumberOfUsers = _tstoi(argv[1]);
+    }
+    __finally {
+        if (maxNumberOfUsers <= 0) {
+            _tprintf_s(TEXT("Error: invalid maximum number of connections!\n"));
+            return -1;
+        }
+    }
+
     EnableCommunicationModuleLogger();
 
     CM_ERROR error = InitCommunicationModule();
@@ -27,6 +49,7 @@ int _tmain(int argc, TCHAR* argv[])
         return -1;
     }
 
+    
     CM_SERVER* server = NULL;
     error = CreateServer(&server);
     if (CM_IS_ERROR(error))
