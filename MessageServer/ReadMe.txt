@@ -38,3 +38,26 @@ AppWizard uses "TODO:" comments to indicate parts of the source code you
 should add to or customize.
 
 /////////////////////////////////////////////////////////////////////////////
+
+ThreadPool implementation
+/////////////////////
+
+Communication protocol
+commands
+file transfer
+initialization connection
+//////////////////
+Command execution functions
+////////////////////
+File handler
+
+sendfile t.txt ->(sendFile) Server ->(sendFile) User
+Header sending filename nrofchunks
+
+Header filename [1..10]
+32bytes
+
+////////////////////
+
+File history management
+

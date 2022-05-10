@@ -51,6 +51,9 @@
     <ClInclude Include="communication_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="thread_pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="communication_api.c">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="communication_logging.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_pool.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

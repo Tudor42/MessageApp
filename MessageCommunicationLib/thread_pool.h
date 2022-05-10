@@ -1,0 +1,37 @@
+#pragma once
+
+#include <stdbool.h>
+#include <windows.h>
+
+typedef void (*THREAD_FUNC)(void *arg);
+
+
+typedef struct _THREAD_POOL_WORK {
+    THREAD_FUNC func;
+    void *args;
+    PTHREAD_POOL_WORK next;
+} THREAD_POOL_WORK, *PTHREAD_POOL_WORK;
+
+typedef struct _THREAD_POOL {
+    PTHREAD_POOL_WORK first;
+    PTHREAD_POOL_WORK last;
+    CRITICAL_SECTION workMutex;
+    CONDITION_VARIABLE workCondition;
+    CONDITION_VARIABLE workingCondition;
+    size_t workingCount; // nr of threads working
+    size_t threadsCount; // total nr of threads
+    bool stop;
+} THREAD_POOL;
+
+int CreateThreadPool(THREAD_POOL **ThreadPool, size_t NrOfThreads);
+int DestroyTheardPool(THREAD_POOL **ThreadPool);
+
+int ThreadPoolAddWork(THREAD_POOL *ThreadPool, THREAD_FUNC func, void *args);
+void ThreadPoolWait(THREAD_POOL *ThreadPool);
+
+PTHREAD_POOL_WORK ThreadPoolWorkCreate(THREAD_FUNC func, void *args);
+void ThreadPoolWorkDestroy(PTHREAD_POOL_WORK work);
+
+PTHREAD_POOL_WORK ThreadPoolWorkGet(THREAD_POOL *ThreadPool);
+
+void ThreadPoolWorker(void *args);

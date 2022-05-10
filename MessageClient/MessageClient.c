@@ -38,83 +38,38 @@ int _tmain(int argc, TCHAR* argv[])
 
     _tprintf_s(TEXT("We are connected to the server...\n"));
 
-    const char* messageToSend = "-This message is from CLIENT-";
-    const SIZE_T messageToSendSize = strlen(messageToSend) * sizeof(char);
+    CM_DATA_BUFFER *sendBuffer = NULL;
+    error = CreateDataBuffer(&sendBuffer, (CM_SIZE) 20);
+    if (CM_IS_ERROR(error)) {
+        _tprintf_s(TEXT("DataBuffer failed with err-code=0x%X!\n"), error);
+        goto finish;
+    }
+    const char *sec = "check";
+    CopyDataIntoBuffer(sendBuffer, (const CM_BYTE *)sec, 6 * sizeof(char));
+    
+    CM_SIZE sendSize;
 
-    CM_DATA_BUFFER* dataToReceive = NULL;
-    CM_SIZE dataToReceiveSize = sizeof("-This message is from SERVER-") * sizeof(char);
+    _tprintf_s(TEXT("%.*S"), (int)(6 * sizeof(char)), (char *)sendBuffer->DataBuffer);
+    error = SendDataToServer(client, send, &sendSize);
 
-    CM_DATA_BUFFER* dataToSend = NULL;
-    CM_SIZE dataToSendSize = (CM_SIZE)messageToSendSize;
 
-    error = CreateDataBuffer(&dataToReceive, dataToReceiveSize);
-    if (CM_IS_ERROR(error))
-    {
-        _tprintf_s(TEXT("Failed to create RECEIVE data buffer with err-code=0x%X!\n"), error);
-        DestroyClient(client);
-        UninitCommunicationModule();
-        return -1;
+    if (CM_IS_ERROR(error) || sendSize == 0) {
+        _tprintf_s(TEXT("Connection rejected\n"));
+        goto finish;
     }
 
-    error = CreateDataBuffer(&dataToSend, dataToSendSize);
-    if (CM_IS_ERROR(error))
-    {
-        _tprintf_s(TEXT("Failed to create SEND data buffer with err-code=0x%X!\n"), error);
-        DestroyDataBuffer(dataToReceive);
-        DestroyClient(client);;
-        UninitCommunicationModule();
-        return -1;
+
+    while (1) {
+        CM_BYTE *command;
+        CM_SIZE n, buffsize;
+        n = getline(&command, &buffsize, stdin);
+
+        
     }
 
-    error = CopyDataIntoBuffer(dataToSend, (const CM_BYTE*)messageToSend, (CM_SIZE)messageToSendSize);
-    if (CM_IS_ERROR(error))
-    {
-        _tprintf_s(TEXT("CopyDataIntoBuffer failed with err-code=0x%X!\n"), error);
-        DestroyDataBuffer(dataToSend);
-        DestroyDataBuffer(dataToReceive);
-        DestroyClient(client);
-        UninitCommunicationModule();
-        return -1;
-    }
 
-    CM_SIZE sendBytesCount = 0;
-    error = SendDataToServer(client, dataToSend, &sendBytesCount);
-    if (CM_IS_ERROR(error))
-    {
-        _tprintf_s(TEXT("SendDataToServer failed with err-code=0x%X!\n"), error);
-        DestroyDataBuffer(dataToSend);
-        DestroyDataBuffer(dataToReceive);
-        DestroyClient(client);
-        UninitCommunicationModule();
-        return -1;
-    }
-
-    _tprintf_s(TEXT("Successfully send data to server:\n \t Send data size: %d\n")
-        , sendBytesCount
-    );
-
-    CM_SIZE receivedByteCount = 0;
-    error = ReceiveDataFormServer(client, dataToReceive, &receivedByteCount);
-    if (CM_IS_ERROR(error))
-    {
-        _tprintf_s(TEXT("ReceiveDataFormServer failed with err-code=0x%X!\n"), error);
-        DestroyDataBuffer(dataToSend);
-        DestroyDataBuffer(dataToReceive);
-        DestroyClient(client);
-        UninitCommunicationModule();
-        return -1;
-    }
-
-    _tprintf_s(TEXT("Successfully received data from server:\n \tReceived data: \" %.*S \" \n \tReceived data size: %d\n")
-        , (int)receivedByteCount
-        , (char*)dataToReceive->DataBuffer
-        , receivedByteCount
-    );
-
+finish:
     _tprintf_s(TEXT("Client is shutting down now...\n"));
-
-    DestroyDataBuffer(dataToSend);
-    DestroyDataBuffer(dataToReceive);
     DestroyClient(client);
     UninitCommunicationModule();
 
