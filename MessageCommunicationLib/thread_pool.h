@@ -1,18 +1,19 @@
-#pragma once
-
+#ifndef _THREAD_POOL_H
+#define _THREAD_POOL_H
 #include <stdbool.h>
 #include <windows.h>
+#include <stdlib.h>
 
 typedef void (*THREAD_FUNC)(void *arg);
 
 
-typedef struct _THREAD_POOL_WORK {
+typedef struct _THREAD_POOL_WORK{
     THREAD_FUNC func;
     void *args;
-    PTHREAD_POOL_WORK next;
+    struct _THREAD_POOL_WORK *next;
 } THREAD_POOL_WORK, *PTHREAD_POOL_WORK;
 
-typedef struct _THREAD_POOL {
+typedef struct {
     PTHREAD_POOL_WORK first;
     PTHREAD_POOL_WORK last;
     CRITICAL_SECTION workMutex;
@@ -34,4 +35,5 @@ void ThreadPoolWorkDestroy(PTHREAD_POOL_WORK work);
 
 PTHREAD_POOL_WORK ThreadPoolWorkGet(THREAD_POOL *ThreadPool);
 
-void ThreadPoolWorker(void *args);
+DWORD WINAPI ThreadPoolWorker(LPVOID args);
+#endif

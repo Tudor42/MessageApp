@@ -48,9 +48,8 @@ int _tmain(int argc, TCHAR* argv[])
     CopyDataIntoBuffer(sendBuffer, (const CM_BYTE *)sec, 6 * sizeof(char));
     
     CM_SIZE sendSize;
-
     _tprintf_s(TEXT("%.*S"), (int)(6 * sizeof(char)), (char *)sendBuffer->DataBuffer);
-    error = SendDataToServer(client, send, &sendSize);
+    error = SendDataToServer(client, sendBuffer, &sendSize);
 
 
     if (CM_IS_ERROR(error) || sendSize == 0) {
@@ -60,9 +59,9 @@ int _tmain(int argc, TCHAR* argv[])
 
 
     while (1) {
-        CM_BYTE *command;
-        CM_SIZE n, buffsize;
-        n = getline(&command, &buffsize, stdin);
+        //CM_BYTE *command;
+        //CM_SIZE n, buffsize;
+        //n = getline(&command, &buffsize, stdin);
 
         
     }
