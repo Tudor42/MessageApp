@@ -3,16 +3,24 @@
 
 #include "communication_error.h"
 #include "communication_data.h"
+#include "connection.h"
 
 /*
     Represent a server. It can satisfy multiple clients and requests.
 */
-typedef struct _CM_SERVER CM_SERVER;
+typedef struct _CM_SERVER
+{
+    SOCKET ServerSocket;
+    UINT16 ServerPort;
+}CM_SERVER;
 
 /*
     Represents a connected client. It can be used to resolve client requests.
 */
-typedef struct _CM_SERVER_CLIENT CM_SERVER_CLIENT;
+typedef struct _CM_SERVER_CLIENT
+{
+    CM_CONNECTION *ClientConnection;
+}CM_SERVER_CLIENT;
 
 /*
     This function will create a new server entity. One should use this inside server application.

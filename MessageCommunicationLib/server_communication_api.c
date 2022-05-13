@@ -2,22 +2,11 @@
 #include "server_communication_api.h"
 
 #include "communication_error.h"
-#include "connection.h"
 #include "communication_logging.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct _CM_SERVER
-{
-    SOCKET ServerSocket;
-    UINT16 ServerPort;
-}CM_SERVER;
-
-typedef struct _CM_SERVER_CLIENT
-{
-    CM_CONNECTION* ClientConnection;
-}CM_SERVER_CLIENT;
 
 static CM_ERROR _TryServerBindOnPortRange(CM_SERVER* Server, const char* IPv4ServerAddress, UINT16 BeginPort, UINT16 EndPort);
 

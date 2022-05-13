@@ -1,5 +1,6 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "thread_pool.h"
+#include <stdlib.h>
 
 
 int CreateThreadPool(THREAD_POOL **ThreadPool, size_t NrOfThreads)
@@ -12,13 +13,14 @@ int CreateThreadPool(THREAD_POOL **ThreadPool, size_t NrOfThreads)
         NrOfThreads = 4;
     }
 
-    *ThreadPool = malloc(sizeof(THREAD_POOL));
+    *ThreadPool = (THREAD_POOL *)malloc(sizeof(THREAD_POOL));
     if (*ThreadPool == NULL) {
         return -1;
     }
 
     (*ThreadPool)->threadsCount = NrOfThreads;
-
+    (*ThreadPool)->workingCount = 0;
+    (*ThreadPool)->stop = false;
     InitializeCriticalSection(&(*ThreadPool)->workMutex);
     InitializeConditionVariable(&(*ThreadPool)->workCondition);
     InitializeConditionVariable(&(*ThreadPool)->workingCondition);
@@ -36,7 +38,7 @@ int CreateThreadPool(THREAD_POOL **ThreadPool, size_t NrOfThreads)
     return 0;
 }
 
-int DestroyTheardPool(THREAD_POOL **ThreadPool)
+int DestroyThreadPool(THREAD_POOL **ThreadPool)
 {
     PTHREAD_POOL_WORK work1, work2;
 
@@ -95,7 +97,7 @@ void ThreadPoolWait(THREAD_POOL *ThreadPool)
     EnterCriticalSection(&ThreadPool->workMutex);
     while (1) {
         if ((!ThreadPool->stop && ThreadPool->workingCount != 0) || (ThreadPool->stop && ThreadPool->threadsCount != 0)) {
-            SleepConditionVariableCS(&ThreadPool->workCondition, &ThreadPool->workMutex, INFINITE);
+            SleepConditionVariableCS(&ThreadPool->workingCondition, &ThreadPool->workMutex, INFINITE);
         }
         else {
             break;
@@ -110,7 +112,7 @@ PTHREAD_POOL_WORK ThreadPoolWorkCreate(THREAD_FUNC func, void *args)
         return NULL;
     }
 
-    PTHREAD_POOL_WORK work = malloc(sizeof(THREAD_POOL_WORK));
+    PTHREAD_POOL_WORK work = (PTHREAD_POOL_WORK)malloc(sizeof(THREAD_POOL_WORK));
     if (work == NULL) {
         return NULL;
     }
@@ -154,41 +156,41 @@ PTHREAD_POOL_WORK ThreadPoolWorkGet(THREAD_POOL *ThreadPool)
 
 DWORD WINAPI ThreadPoolWorker(LPVOID args)
 {
-    THREAD_POOL *tpool;
-    tpool = (THREAD_POOL *)args;
+    THREAD_POOL *threadPool;
+    threadPool = (THREAD_POOL *)args;
 
     PTHREAD_POOL_WORK work;
     while (1) {
-        EnterCriticalSection(&tpool->workMutex);
-        while (tpool->first == NULL && !tpool->stop) {
-            SleepConditionVariableCS(&tpool->workCondition, &tpool->workMutex, INFINITE);
+        EnterCriticalSection(&threadPool->workMutex);
+        while (threadPool->first == NULL && !threadPool->stop) {
+            SleepConditionVariableCS(&threadPool->workCondition, &threadPool->workMutex, 200);
         }
 
-        if (tpool->stop) {
+        if (threadPool->stop) {
             break;
         }
 
-        work = ThreadPoolWorkGet(tpool);
-        tpool->workingCount++;
-        LeaveCriticalSection(&tpool->workMutex);
+        work = ThreadPoolWorkGet(threadPool);
+        threadPool->workingCount++;
+        LeaveCriticalSection(&threadPool->workMutex);
 
         if (work != (PTHREAD_POOL_WORK)NULL) {
             work->func(work->args);
             ThreadPoolWorkDestroy(work);
         }
 
-        EnterCriticalSection(&tpool->workMutex);
-        tpool->workingCount--;
+        EnterCriticalSection(&threadPool->workMutex);
+        threadPool->workingCount--;
 
-        if (!tpool->stop && tpool->first == NULL && tpool->workingCount == 0) {
-            WakeConditionVariable(&tpool->workingCondition);
+        if (!threadPool->stop && threadPool->first == NULL && threadPool->workingCount == 0) {
+            WakeConditionVariable(&threadPool->workingCondition);
         }
 
-        LeaveCriticalSection(&tpool->workMutex);
+        LeaveCriticalSection(&threadPool->workMutex);
     }
 
-    tpool->threadsCount--;
-    WakeConditionVariable(&tpool->workingCondition);
-    LeaveCriticalSection(&tpool->workMutex);
+    threadPool->threadsCount--;
+    WakeConditionVariable(&threadPool->workingCondition);
+    LeaveCriticalSection(&threadPool->workMutex);
     return 0;
 }

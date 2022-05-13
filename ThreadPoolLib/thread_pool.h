@@ -7,7 +7,7 @@
 typedef void (*THREAD_FUNC)(void *arg);
 
 
-typedef struct _THREAD_POOL_WORK{
+typedef struct _THREAD_POOL_WORK {
     THREAD_FUNC func;
     void *args;
     struct _THREAD_POOL_WORK *next;
@@ -25,7 +25,7 @@ typedef struct {
 } THREAD_POOL;
 
 int CreateThreadPool(THREAD_POOL **ThreadPool, size_t NrOfThreads);
-int DestroyTheardPool(THREAD_POOL **ThreadPool);
+int DestroyThreadPool(THREAD_POOL **ThreadPool);
 
 int ThreadPoolAddWork(THREAD_POOL *ThreadPool, THREAD_FUNC func, void *args);
 void ThreadPoolWait(THREAD_POOL *ThreadPool);

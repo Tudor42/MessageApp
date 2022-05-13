@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <tchar.h>
 
-
-
 // TODO: reference additional headers your program requires here
+#include "thread_functions.h"
+#include <windows.h>
+
+#define MAX_BUFF_SIZE 256

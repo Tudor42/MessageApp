@@ -10,6 +10,6 @@
 #include <stdio.h>
 #include <tchar.h>
 
-
-
 // TODO: reference additional headers your program requires here
+
+#define MAX_BUFF_SIZE 256
